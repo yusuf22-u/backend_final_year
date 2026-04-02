@@ -1,0 +1,28 @@
+import mysql from "mysql2";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
+
+const db = pool.promise();
+
+// ✅ Test connection
+db.query('SELECT 1')
+  .then(() => {
+    console.log('✅ Connected to MySQL database (via pool)');
+  })
+  .catch((err) => {
+    console.error('❌ MySQL connection error:', err);
+    console.log(
+      'database connection fail'
+    )
+  });;
+
+
+export default db;
