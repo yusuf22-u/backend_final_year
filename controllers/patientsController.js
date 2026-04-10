@@ -16,12 +16,21 @@ const deleteFile = (filePath) => {
 // Create patient
 export const createPatient = async (req, res) => {
   try {
-    const { first_name, last_name, email, phone, address, date_of_birth } = req.body;
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      address,
+      date_of_birth,
+      gender,
+      medical_record_number,
+      insurance
+    } = req.body;
 
     if (!first_name || !last_name || !email || !phone) {
-      // Delete uploaded file if validation fails
       if (req.file) deleteFile(req.file.path);
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "All required fields are missing" });
     }
 
     const patientData = {
@@ -31,14 +40,35 @@ export const createPatient = async (req, res) => {
       phone,
       address,
       date_of_birth,
+      gender,
+      medical_record_number,
+      insurance,
       profile_image: req.file?.filename || null,
     };
 
     const patient = await createPatientService(patientData);
-    return res.status(201).json({ message: "Patient created successfully", patient });
+
+    return res.status(201).json({
+      message: "Patient created successfully",
+      patient
+    });
+
   } catch (error) {
+
     if (req.file) deleteFile(req.file.path);
+
     console.error("Create patient error:", error);
+    
+    if (error.message.includes("already exists")) {
+    return res.status(409).json({ message: error.message });
+  }
+
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        message: "Email or Medical Record Number already exists"
+      });
+    }
+
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -73,6 +103,7 @@ export const getPatientById = async (req, res) => {
 export const updatePatient = async (req, res) => {
   try {
     const patientId = req.params.id;
+
     const patient = await getPatientByIdService(patientId);
 
     if (!patient) {
@@ -80,7 +111,17 @@ export const updatePatient = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    const { first_name, last_name, email, phone, address, date_of_birth } = req.body;
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      address,
+      date_of_birth,
+      gender,
+      medical_record_number,
+      insurance
+    } = req.body;
 
     const updatedData = {
       first_name,
@@ -89,20 +130,34 @@ export const updatePatient = async (req, res) => {
       phone,
       address,
       date_of_birth,
+      gender,
+      medical_record_number,
+      insurance,
       profile_image: req.file?.filename || patient.profile_image,
     };
 
-    // Delete old image if new one uploaded
+    // delete old image if new uploaded
     if (req.file && patient.profile_image) {
-      const oldImagePath = path.join("uploads/patients", patient.profile_image);
-      deleteFile(oldImagePath);
+      const oldPath = path.join(
+        "uploads/patient_profile",
+        patient.profile_image
+      );
+      deleteFile(oldPath);
     }
 
     const updatedPatient = await updatePatientService(patientId, updatedData);
-    return res.status(200).json({ message: "Patient updated", patient: updatedPatient });
+
+    return res.status(200).json({
+      message: "Patient updated successfully",
+      patient: updatedPatient
+    });
+
   } catch (error) {
+
     if (req.file) deleteFile(req.file.path);
+
     console.error("Update patient error:", error);
+
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -111,18 +166,27 @@ export const updatePatient = async (req, res) => {
 export const deletePatient = async (req, res) => {
   try {
     const patientId = req.params.id;
+
     const patient = await getPatientByIdService(patientId);
 
-    if (!patient) return res.status(404).json({ message: "Patient not found" });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
-    // Delete image if exists
     if (patient.profile_image) {
-      const imagePath = path.join("uploads/patients", patient.profile_image);
+      const imagePath = path.join(
+        "uploads/patient_profile",
+        patient.profile_image
+      );
       deleteFile(imagePath);
     }
 
     await deletePatientService(patientId);
-    return res.status(200).json({ message: "Patient deleted successfully" });
+
+    return res.status(200).json({
+      message: "Patient deleted successfully"
+    });
+
   } catch (error) {
     console.error("Delete patient error:", error);
     return res.status(500).json({ message: "Server error" });

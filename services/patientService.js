@@ -4,10 +4,23 @@ import {
   findAllPatients,
   findPatientById,
   updatePatientById,
-  deletePatientById
+  deletePatientById,
+  findPatientByMedical_record_number,
+  findPatientByEmail
 } from "../repositories/patientRepository.js";
 
+// creating patients records
 export const createPatientService = async (data) => {
+  const existingMedNo = await findPatientByMedical_record_number(data.medical_record_number);
+  if (existingMedNo && existingMedNo.length > 0) {
+    throw new Error("Medical Record Number already exists");
+  }
+
+  const existingEmail = await findPatientByEmail(data.email);
+  if (existingEmail && existingEmail.length > 0) {
+    throw new Error("Patient already exists with this email");
+  }
+
   return await insertPatient(data);
 };
 
