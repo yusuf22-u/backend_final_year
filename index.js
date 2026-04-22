@@ -6,6 +6,8 @@ import { patientRouter } from "./routers/patientRoutes.js";
 import {prescriptionRouter} from './routers/Prescription.js'
 import { vitalsRouter } from "./routers/vitals.js";
 import { historyRouter } from "./routers/history.js";
+import { bedsRouter } from "./routers/bedRoutes.js";
+import { staffRouter } from "./routers/staffRoutes.js";
 import cors from "cors";
 import  createUserTable from "./models/user.model.js"
 import createVitalsTable from "./models/vitalsModel.js";
@@ -36,7 +38,8 @@ app.use("/api/users", router);
 app.use("/api/patients", patientRouter);
 app.use("/api/presription", prescriptionRouter);
 app.use("/api/vitals", vitalsRouter );
-app.use("/api/history", historyRouter);
+app.use("/api/beds", bedsRouter);
+app.use("/api/staff", staffRouter);
 
 app.listen(process.env.PORT, () =>
   console.log(`server runing on port ${process.env.PORT}`),
