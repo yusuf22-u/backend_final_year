@@ -6,7 +6,10 @@ import {
   getPatientByIdService,
   updatePatientService,
   deletePatientService,
+  updatePatientByUserService,
+  
 } from "../services/patientService.js";
+import db from "../config/db.js";
 
 // Helper to delete images
 const deleteFile = (filePath) => {
@@ -17,59 +20,48 @@ const deleteFile = (filePath) => {
 export const createPatient = async (req, res) => {
   try {
     const {
-      first_name,
-      last_name,
-      email,
-      phone,
-      address,
-      date_of_birth,
+      user_id,
       gender,
-      medical_record_number,
-      insurance
-    } = req.body;
-
-    if (!first_name || !last_name || !email || !phone) {
-      if (req.file) deleteFile(req.file.path);
-      return res.status(400).json({ message: "All required fields are missing" });
-    }
-
-    const patientData = {
-      first_name,
-      last_name,
-      email,
-      phone,
-      address,
       date_of_birth,
-      gender,
       medical_record_number,
       insurance,
-      profile_image: req.file?.filename || null,
-    };
+      address
+    } = req.body;
 
-    const patient = await createPatientService(patientData);
+    // 🔥 determine user_id
+    const finalUserId = user_id || req.user.userId;
 
-    return res.status(201).json({
-      message: "Patient created successfully",
-      patient
-    });
+    // ✅ check if patient already exists
+    const [rows] = await db.query(
+      "SELECT id FROM patients WHERE user_id = ?",
+      [finalUserId]
+    );
 
-  } catch (error) {
-
-    if (req.file) deleteFile(req.file.path);
-
-    console.error("Create patient error:", error);
-    
-    if (error.message.includes("already exists")) {
-    return res.status(409).json({ message: error.message });
-  }
-
-    if (error.code === "ER_DUP_ENTRY") {
+    if (rows.length > 0) {
       return res.status(409).json({
-        message: "Email or Medical Record Number already exists"
+        message: "Patient profile already exists for this user"
       });
     }
 
-    return res.status(500).json({ message: "Server error" });
+    const patientData = {
+      user_id: finalUserId,
+      gender,
+      date_of_birth,
+      medical_record_number,
+      insurance,
+      address
+    };
+
+    const patientId = await createPatientService(patientData);
+
+    return res.status(201).json({
+      message: "Patient profile created",
+      patientId
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -190,5 +182,38 @@ export const deletePatient = async (req, res) => {
   } catch (error) {
     console.error("Delete patient error:", error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+// 👨‍💼 ADMIN UPDATE
+export const updatePatientByAdmin = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+
+    const updated = await updatePatientService(patientId, req.body);
+
+    res.json({
+      message: "Patient updated by admin",
+      data: updated
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 👤 PATIENT UPDATE OWN PROFILE
+export const updateMyPatientProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const updated = await updatePatientByUserService(userId, req.body);
+
+    res.json({
+      message: "Profile updated",
+      data: updated
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

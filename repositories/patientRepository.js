@@ -1,23 +1,55 @@
 import db from "../config/db.js";
 
 export const insertPatient = async (data) => {
-  const { first_name, last_name, email, phone, address, date_of_birth, profile_image, gender, insurance, medical_record_number } = data;
-  const [rows] = await db.query(
+  const {
+    user_id,
+    gender,
+    date_of_birth,
+    medical_record_number,
+    insurance,
+    address,
+    assigned_staff_id
+  } = data;
+
+  const [result] = await db.query(
     `INSERT INTO patients 
-      (first_name, last_name, email, phone, address, date_of_birth, profile_image, gender,insurance, medical_record_number) 
-     VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?)`,
-    [first_name, last_name, email, phone, address, date_of_birth, profile_image, gender, insurance, medical_record_number]
+    (user_id, gender, date_of_birth, medical_record_number, insurance, address, assigned_staff_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      user_id,
+      gender,
+      date_of_birth,
+      medical_record_number,
+      insurance,
+      address,
+      assigned_staff_id || null
+    ]
   );
-  return rows.insertId;
+
+  return result.insertId;
 };
 
 export const findAllPatients = async () => {
-  const [rows] = await db.query(`SELECT * FROM patients`);
+  const [rows] = await db.query(`
+    SELECT 
+      p.*,
+      u.first_name,
+      u.last_name,
+      u.email,
+      u.phone,
+      u.profile_image
+    FROM patients p
+    JOIN users u ON u.id = p.user_id WHERE role="patient"
+  `);
+
   return rows;
 };
 // find patients by medicalnunber
-export const findPatientByMedical_record_number = async (medical_record_number) => {
-  const [rows] = await db.query(`SELECT * FROM patients WHERE  medical_record_number = ?`, [medical_record_number]);
+export const findPatientByMedical_record_number = async (mrn) => {
+  const [rows] = await db.query(
+    `SELECT * FROM patients WHERE medical_record_number = ?`,
+    [mrn]
+  );
   return rows[0];
 };
 // find patients by email
@@ -27,20 +59,94 @@ export const findPatientByEmail = async (email) => {
 };
 
 export const findPatientById = async (id) => {
-  const [rows] = await db.query(`SELECT * FROM patients WHERE id = ?`, [id]);
+  const [rows] = await db.query(`
+    SELECT 
+      p.*,
+      u.first_name,
+      u.last_name,
+      u.email,
+      u.phone,
+      u.profile_image
+    FROM patients p
+    JOIN users u ON u.id = p.user_id
+    WHERE p.id = ?
+  `, [id]);
+
   return rows[0];
 };
-
 export const updatePatientById = async (id, data) => {
-  const { first_name, last_name, email, phone, address, date_of_birth, profile_image } = data;
-  const [rows] = await db.query(
-    `UPDATE patients SET first_name=?, last_name=?, email=?, phone=?, address=?, date_of_birth=?, profile_image=? WHERE id=?`,
-    [first_name, last_name, email, phone, address, date_of_birth, profile_image, id]
-  );
-  return rows;
-};
+  const {
+    user_id,
+    gender,
+    date_of_birth,
+    medical_record_number,
+    insurance,
+    address,
+    assigned_staff_id
+  } = data;
 
+  const [result] = await db.query(
+    `UPDATE patients SET
+      user_id=?,
+      gender=?,
+      date_of_birth=?,
+      medical_record_number=?,
+      insurance=?,
+      address=?,
+      assigned_staff_id=?
+     WHERE id=?`,
+    [
+      user_id,
+      gender,
+      date_of_birth,
+      medical_record_number,
+      insurance,
+      address,
+      assigned_staff_id || null,
+      id
+    ]
+  );
+
+  return result;
+};
 export const deletePatientById = async (id) => {
   const [rows] = await db.query(`DELETE FROM patients WHERE id=?`, [id]);
   return rows;
+};
+export const findPatientByUserId = async (userId) => {
+  const [rows] = await db.query(
+    "SELECT * FROM patients WHERE user_id = ?",
+    [userId]
+  );
+
+  return rows[0];
+};
+export const updatePatientByUserId = async (userId, data) => {
+  const {
+    gender,
+    date_of_birth,
+    medical_record_number,
+    insurance,
+    address
+  } = data;
+
+  const [result] = await db.query(
+    `UPDATE patients SET
+      gender=?,
+      date_of_birth=?,
+      medical_record_number=?,
+      insurance=?,
+      address=?
+     WHERE user_id=?`,
+    [
+      gender,
+      date_of_birth,
+      medical_record_number,
+      insurance,
+      address,
+      userId
+    ]
+  );
+
+  return result;
 };

@@ -6,19 +6,27 @@ import {
   updatePatientById,
   deletePatientById,
   findPatientByMedical_record_number,
-  findPatientByEmail
+  findPatientByEmail,
+  findPatientByUserId
 } from "../repositories/patientRepository.js";
 
 // creating patients records
 export const createPatientService = async (data) => {
-  const existingMedNo = await findPatientByMedical_record_number(data.medical_record_number);
-  if (existingMedNo && existingMedNo.length > 0) {
-    throw new Error("Medical Record Number already exists");
-  }
 
-  const existingEmail = await findPatientByEmail(data.email);
-  if (existingEmail && existingEmail.length > 0) {
-    throw new Error("Patient already exists with this email");
+  if (data.medical_record_number) {
+    const existing = await findPatientByMedical_record_number(
+      data.medical_record_number
+    );
+
+    if (existing) {
+      throw new Error("Medical Record Number already exists");
+    }
+    if(data.user_id){
+      const existing=await findPatientById(data.user_id)
+    }
+      if (existing) {
+      throw new Error("Patient already exists");
+    }
   }
 
   return await insertPatient(data);
@@ -32,17 +40,28 @@ export const getPatientByIdService = async (id) => {
   return await findPatientById(id);
 };
 
+// 👨‍💼 ADMIN SERVICE
 export const updatePatientService = async (id, data) => {
-  const patient = await findPatientById(id);
-  if (!patient) throw new Error("Patient not found");
 
-  // remove old image if new one uploaded
-  if (data.profile_image && patient.profile_image) {
-    const oldPath = `uploads/patients/${patient.profile_image}`;
-    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+  // 🔒 prevent duplicate user_id
+  if (data.user_id) {
+    const existing = await findPatientByUserId(data.user_id);
+
+    if (existing && existing.id !== parseInt(id)) {
+      throw new Error("This user already has a patient profile");
+    }
   }
 
   return await updatePatientById(id, data);
+};
+
+// 👤 PATIENT SERVICE
+export const updatePatientByUserService = async (userId, data) => {
+
+  // ❌ BLOCK user_id change
+  delete data.user_id;
+
+  return await updatePatientByUserId(userId, data);
 };
 
 export const deletePatientService = async (id) => {

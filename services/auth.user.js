@@ -1,56 +1,68 @@
-import { findUserByEmail, createUser } from "../repositories/auth.user.js";
+// services/authService.js
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import db from "../config/db.js";
+import { findUserByEmail, insertUser, getUsersForPatient } from "../repositories/auth.user.js";
+
 dotenv.config();
 
-export const signUpServices = async ({
-  firstName,
-  lastName,
-  phone,
-  email,
-  password,
-  profile_image,
-}) => {
-  // check the email exits
-  const rows = await findUserByEmail(email);
-  if (rows.length > 0) throw new Error("Email already exists");
+export const signUpService = async (data) => {
+  const conn = await db.getConnection();
 
-  // hash password
-  const hashPassword = await bcrypt.hash(password, 10);
-  // create user
-  const result = await createUser({
-    firstName,
-    lastName,
-    phone,
-    email,
-    password:hashPassword,
-    profile_image
+  try {
+    await conn.beginTransaction();
+
+    // check email
+    const existing = await findUserByEmail(data.email);
+    if (existing.length > 0) {
+      throw new Error("Email already exists");
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // create user
+    const userId = await insertUser(conn, {
+      ...data,
+      password: hashedPassword,
+      role: data.role || "patient"
+    });
+
+    await conn.commit();
+
+    return { userId };
+
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
   }
-   
-  );
-  return { userId:result.insertId};
 };
-
-  // login
-export const loginServices=async({email,password})=>{
+export const loginService = async ({ email, password }) => {
   const normalizedEmail = email.toLowerCase().trim();
 
   const rows = await findUserByEmail(normalizedEmail);
+  if (rows.length === 0) throw new Error("Invalid credentials");
 
-  if (rows.length <= 0) throw new Error("Invalid credentials");
-  // compare the password
-  const user= await rows[0]
-  const isPasswordValid= await bcrypt.compare(password, user.password)
-  if(!isPasswordValid) throw new Error("Invalid credentials");
+  const user = rows[0];
+
+  const isValid = await bcrypt.compare(password, user.password);
+  if (!isValid) throw new Error("Invalid credentials");
 
   const token = jwt.sign(
-   { userId: user.id, email: user.email, role:user.role },
-  process.env.JWT_SECRET_KEY,
-   { expiresIn: '1h' }
- 
-)
-return token
-  }
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role
+    },
+    process.env.JWT_SECRET_KEY,
+    { expiresIn: "1h" }
+  );
 
-  
+  return token;
+};
+export const getUsersForPatientService = async () => {
+  return await getUsersForPatient()
+}

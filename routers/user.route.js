@@ -1,17 +1,20 @@
 import express from "express";
-import { createAccount,login,getProfile } from "../controllers/user.controller.js";
+import { createAccount,login,getProfile,getUsersForPatient } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/upload.js"
 import { uploadSingleImage  } from "../middlewares/uploadWrapper.js";
 import {verifyToken} from "../middlewares/verifyToken.js";
+import { isAdmin } from "../middlewares/roles.js";
 
 
 const router= express.Router()
 router.post(
-  "/create",
+  "/register",
   uploadSingleImage,
   createAccount
 );
 router.post("/login",login);
 router.get("/profile", verifyToken, getProfile);
+router.get("/profile", verifyToken, getProfile);
+router.get("/", verifyToken,isAdmin, getUsersForPatient);
 
 export default router;

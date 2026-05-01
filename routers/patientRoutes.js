@@ -5,9 +5,12 @@ import {
   getAllPatients,
   getPatientById,
   updatePatient,
-  deletePatient
+  deletePatient,
+  updatePatientByAdmin,
+  updateMyPatientProfile
 } from "../controllers/patientsController.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
+import {isAdmin, isPatient} from "../middlewares/roles.js"
 
 const router = express.Router();
 
@@ -15,6 +18,7 @@ const router = express.Router();
 router.post(
   "/",
   verifyToken,
+  isAdmin,
   patientUpload.single("profile_image"), 
   createPatient
 );
@@ -23,13 +27,20 @@ router.post(
 router.put(
   "/:id",
   verifyToken,
+  isAdmin,
   patientUpload.single("profile_image"), 
   updatePatient
 );
 
 // Other routes
-router.get("/", verifyToken, getAllPatients);
-router.get("/:id", verifyToken, getPatientById);
-router.delete("/:id", verifyToken, deletePatient);
+router.get("/", verifyToken,isAdmin, getAllPatients);
+router.get("/:id", verifyToken,isPatient, getPatientById);
+router.delete("/:id", verifyToken,isAdmin, deletePatient);
+// user completes profile
+router.post("/patients/me", verifyToken,isPatient, createPatient);
+router.put("/admin/:id", verifyToken, isAdmin, updatePatientByAdmin);
+
+// 👤 Patient update own profile
+router.put("/me", verifyToken, isPatient, updateMyPatientProfile);
 
 export { router as patientRouter };

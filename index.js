@@ -8,11 +8,14 @@ import { vitalsRouter } from "./routers/vitals.js";
 import { historyRouter } from "./routers/history.js";
 import { bedsRouter } from "./routers/bedRoutes.js";
 import { staffRouter } from "./routers/staffRoutes.js";
+import { appointmentRoutes } from "./routers/appointmentRoutes.js";
+import { patientRecordRoute } from "./routers/patient_recordRoute.js";
 import cors from "cors";
 import  createUserTable from "./models/user.model.js"
 import createVitalsTable from "./models/vitalsModel.js";
 import createPrescriptionsTable from "./models/prescriptionModel.js";
 import createHistoryTable from "./models/historyModel.js";
+import createAppointmentsTable from "./models/appointmentModel.js"
 dotenv.config();
 
 const app = express();
@@ -32,6 +35,7 @@ await createUserTable()
 await createHistoryTable()
 await createPrescriptionsTable()
 await createVitalsTable()
+await createAppointmentsTable()
 
 
 app.use("/api/users", router);
@@ -40,6 +44,8 @@ app.use("/api/presription", prescriptionRouter);
 app.use("/api/vitals", vitalsRouter );
 app.use("/api/beds", bedsRouter);
 app.use("/api/staff", staffRouter);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/patient-records", patientRecordRoute);
 
 app.listen(process.env.PORT, () =>
   console.log(`server runing on port ${process.env.PORT}`),

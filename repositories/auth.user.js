@@ -1,39 +1,56 @@
+// repositories/userRepository.js
 import db from "../config/db.js";
 
+// find by email
 export const findUserByEmail = async (email) => {
-  const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+  const [rows] = await db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email]
+  );
   return rows;
 };
 
+// create user (used by signup OR staff/patient creation)
+export const insertUser = async (conn, data) => {
+  const [result] = await conn.query(`
+    INSERT INTO users 
+    (first_name, last_name, phone, email, password, role, profile_image)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [
+    data.first_name,
+    data.last_name,
+    data.phone,
+    data.email,
+    data.password,
+    data.role,
+    data.profile_image
+  ]);
 
-// create users
-export const createUser = async ({
-  firstName,
-  lastName,
-  phone,
-  email,
-  password,
-  profile_image
-}) => {
-  const [result] = await db.query(
-    "INSERT INTO users (firstName, lastName, phone, email, password, profile_image) VALUES(?,?,?,?,?,?)",
-    [firstName, lastName, phone, email, password, profile_image],
-  );
-  return result;
- 
+  return result.insertId;
 };
-// update users profile-image
 
-export const updateUserImage = async (image, userId) => {
+// get user by id
+export const findUserById = async (userId) => {
   const [rows] = await db.query(
+    "SELECT * FROM users WHERE id = ?",
+    [userId]
+  );
+  return rows;
+};
+
+// update profile image
+export const updateUserImage = async (userId, image) => {
+  await db.query(
     "UPDATE users SET profile_image = ? WHERE id = ?",
     [image, userId]
   );
-  return rows;
 };
 
-//  finding user by id
-export const getUserById = async (userId) => {
-  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+export const getUsersForPatient = async () => {
+  const [rows] = await db.query(`
+    SELECT id, first_name, last_name, email 
+    FROM users 
+    WHERE role = 'patient'
+  `);
   return rows;
 };
