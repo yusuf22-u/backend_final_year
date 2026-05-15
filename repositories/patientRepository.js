@@ -37,9 +37,33 @@ export const findAllPatients = async () => {
       u.last_name,
       u.email,
       u.phone,
-      u.profile_image
+      u.profile_image,
+
+      pa.condition_state,
+      pa.status,
+      pa.notes,
+
+      s.id AS doctor_id,
+      su.first_name AS doctor_first_name,
+      su.last_name AS doctor_last_name,
+      s.department,
+      s.specialty
+
     FROM patients p
-    JOIN users u ON u.id = p.user_id WHERE role="patient"
+    JOIN users u ON u.id = p.user_id
+
+    LEFT JOIN patient_assignments pa 
+      ON pa.patient_id = p.id 
+      AND pa.is_active = true
+
+    LEFT JOIN staff s 
+      ON s.id = pa.doctor_id
+
+    LEFT JOIN users su 
+      ON su.id = s.user_id
+
+    WHERE u.role = 'patient'
+    ORDER BY p.id DESC
   `);
 
   return rows;

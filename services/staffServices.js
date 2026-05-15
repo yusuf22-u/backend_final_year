@@ -1,6 +1,6 @@
 // services/staffService.js
 import db from "../config/db.js";
-import { insertUser, insertStaff } from "../repositories/staffRepository.js";
+import { insertUser, insertStaff,getAllStaff,getDoctorPatientsRepo } from "../repositories/staffRepository.js";
 
 export const createStaffService = async (data) => {
   const conn = await db.getConnection();
@@ -30,4 +30,11 @@ export const createStaffService = async (data) => {
   } finally {
     conn.release();
   }
+};
+
+export const getAllStaffService=async()=>{
+  return await getAllStaff()
+}
+export const getDoctorPatientsServices = async (staffId) => {
+  return await getDoctorPatientsRepo(staffId);
 };

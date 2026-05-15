@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import db from "../config/db.js";
-import { findUserByEmail, insertUser, getUsersForPatient } from "../repositories/auth.user.js";
+import { findUserByEmail, insertUser, getUsersForPatient, userProfileRepo } from "../repositories/auth.user.js";
 
 dotenv.config();
 
@@ -65,4 +65,7 @@ export const loginService = async ({ email, password }) => {
 };
 export const getUsersForPatientService = async () => {
   return await getUsersForPatient()
+}
+export const getuserProfileService = async (userId) => {
+  return await userProfileRepo(userId)
 }

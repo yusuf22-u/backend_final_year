@@ -1,5 +1,5 @@
 
-import { signUpService, loginService,getUsersForPatientService } from "../services/auth.user.js";
+import { signUpService, loginService, getUsersForPatientService, getuserProfileService } from "../services/auth.user.js";
 import { findUserById, updateUserImage } from "../repositories/auth.user.js";
 import { deleteFile } from "../helpers/deleteFile.js";
 import db from "../config/db.js";
@@ -115,7 +115,7 @@ export const getProfile = async (req, res) => {
     }
 
     return res.status(200).json(rows[0]);
-    console.log("row",rows)
+    console.log("row", rows)
 
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
@@ -129,3 +129,16 @@ export const getUsersForPatient = async (req, res) => {
     res.status(500).json({ message: "Error fetching users" });
   }
 };
+export const getuserProfileDetail = async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const result = await getuserProfileService(userId)
+    if (result.length <= 0) {
+      return res.status(404).json({ message: "users not found" })
+
+    }
+    return res.status(200).json(result)
+  } catch (error) {
+    console.error("server err", error)
+  }
+}

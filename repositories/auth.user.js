@@ -54,3 +54,50 @@ export const getUsersForPatient = async () => {
   `);
   return rows;
 };
+export const userProfileRepo = async (userId) => {
+  const [rows] = await db.query(`
+    SELECT 
+      u.id AS user_id,
+      u.first_name,
+      u.last_name,
+      u.email,
+      u.phone,
+      u.profile_image,
+      u.role AS user_role,
+      u.status AS user_status,
+      u.last_login,
+      u.created_at,
+
+      s.id AS staff_id,
+      s.role AS staff_role,
+      s.department,
+      s.specialty,
+      s.schedule,
+      s.rating,
+      s.status AS staff_status,
+      s.license_no,
+      s.address AS staff_address
+      
+
+    FROM users u
+
+    LEFT JOIN staff s 
+      ON s.user_id = u.id
+
+    WHERE u.id = ?
+      AND u.is_deleted = FALSE
+  `, [userId]);
+
+  return rows[0];
+};
+
+export const getAdminUser = async () => {
+  const [rows] = await db.query(`
+    SELECT id
+    FROM users
+    WHERE role='admin'
+    LIMIT 1
+  `);
+
+  return rows[0];
+};

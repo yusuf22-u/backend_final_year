@@ -16,6 +16,7 @@ import createVitalsTable from "./models/vitalsModel.js";
 import createPrescriptionsTable from "./models/prescriptionModel.js";
 import createHistoryTable from "./models/historyModel.js";
 import createAppointmentsTable from "./models/appointmentModel.js"
+// import createVitalsTable from "./models/vitalsModel.js";
 dotenv.config();
 
 const app = express();

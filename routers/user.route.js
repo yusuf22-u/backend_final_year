@@ -1,5 +1,5 @@
 import express from "express";
-import { createAccount,login,getProfile,getUsersForPatient } from "../controllers/user.controller.js";
+import { createAccount,login,getProfile,getUsersForPatient,getuserProfileDetail} from "../controllers/user.controller.js";
 import {upload} from "../middlewares/upload.js"
 import { uploadSingleImage  } from "../middlewares/uploadWrapper.js";
 import {verifyToken} from "../middlewares/verifyToken.js";
@@ -14,7 +14,8 @@ router.post(
 );
 router.post("/login",login);
 router.get("/profile", verifyToken, getProfile);
-router.get("/profile", verifyToken, getProfile);
+// router.get("/profile", verifyToken, getProfile);
 router.get("/", verifyToken,isAdmin, getUsersForPatient);
+router.get("/my-account", verifyToken, getuserProfileDetail);
 
 export default router;

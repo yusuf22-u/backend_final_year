@@ -1,32 +1,19 @@
 // routes/appointment.routes.js
-
 import express from "express";
 import {
   createAppointment,
-  getPendingAppointments,
-  approveAppointment,
-  rejectAppointment,
-  getDoctorAppointments,
   getPatientAppointments,
-  getAppointmentsDetail
+  approveAppointment
 } from "../controllers/appointmentController.js";
-
-import { verifyToken } from "../middlewares/verifyToken.js";
-import {isAdmin,isDoctor,isPatient} from "../middlewares/roles.js"
+import {verifyToken} from "../middlewares/verifyToken.js";
 
 const router = express.Router();
 
+router.post("/", verifyToken, createAppointment);
 
-//patient
-router.post("/", verifyToken, isPatient, createAppointment);
-router.get("/patient", verifyToken, isPatient, getPatientAppointments);
+router.get("/patient", verifyToken, getPatientAppointments);
 
-//admin
-router.get("/pending", verifyToken, isAdmin, getPendingAppointments);
-router.put("/approve/:id", verifyToken, isAdmin, approveAppointment);
-router.put("/reject/:id", verifyToken, isAdmin, rejectAppointment);
-router.get("/view", verifyToken, isAdmin, getAppointmentsDetail);
+router.put("/:id/approve", verifyToken, approveAppointment);
 
-//doctor
-router.get("/doctor", verifyToken, isDoctor, getDoctorAppointments);
+
 export {router as appointmentRoutes} ;

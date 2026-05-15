@@ -2,30 +2,26 @@ import db from "../config/db.js";
 export const getAllStaff = async () => {
   const [rows] = await db.query(`
     SELECT 
-      s.id,
-      s.user_id,
-      u.first_name,
-      u.last_name,
-      u.email,
-      u.phone,
-      s.role,
-      s.department,
-      s.specialty,
-      s.schedule,
-      s.rating,
-      s.status,
-      s.license_no,
-      COUNT(p.id) AS total_patients
-
-    FROM staff s
-
-    JOIN users u ON u.id = s.user_id
-
-    LEFT JOIN patients p 
-      ON p.assigned_staff_id = s.id
-
-    GROUP BY s.id
-    ORDER BY s.id DESC
+  s.id,
+  s.user_id,
+  u.first_name,
+  u.last_name,
+  u.email,
+  u.phone,
+  s.role,
+  s.department,
+  s.specialty,
+  s.schedule,
+  s.rating,
+  s.status,
+  s.license_no,
+  COUNT(p.id) AS total_patients
+FROM staff s
+JOIN users u ON u.id = s.user_id
+LEFT JOIN patients p ON p.assigned_staff_id = s.id
+WHERE s.role = 'Doctor'
+GROUP BY s.id
+ORDER BY s.id DESC;
   `);
 
   return rows;
@@ -85,8 +81,8 @@ export const insertStaff = async (conn, data) => {
   return result.insertId;
 };
 
-export const updateStaff = async(id,data)=>{
- await db.query(`
+export const updateStaff = async (id, data) => {
+  await db.query(`
  UPDATE staff SET
  full_name=?,
  email=?,
@@ -100,24 +96,24 @@ export const updateStaff = async(id,data)=>{
  license_no=?,
  address=?
  WHERE id=?
- `,[
-   data.full_name,
-   data.email,
-   data.phone,
-   data.role,
-   data.department,
-   data.specialty,
-   data.schedule,
-   data.rating,
-   data.status,
-  data.license_no,
-   data.address,
-   id
- ]);
+ `, [
+    data.full_name,
+    data.email,
+    data.phone,
+    data.role,
+    data.department,
+    data.specialty,
+    data.schedule,
+    data.rating,
+    data.status,
+    data.license_no,
+    data.address,
+    id
+  ]);
 };
 
-export const deleteStaff = async(id)=>{
- await db.query("DELETE FROM staff WHERE id=?", [id]);
+export const deleteStaff = async (id) => {
+  await db.query("DELETE FROM staff WHERE id=?", [id]);
 };
 export const findStaffByUserId = async (userId) => {
   const [rows] = await db.query(
@@ -126,4 +122,38 @@ export const findStaffByUserId = async (userId) => {
   );
 
   return rows[0]; // return single staff
+};
+export const getDoctorPatientsRepo = async (doctorId) => {
+  const [rows] = await db.query(`
+    SELECT 
+      p.id AS patient_id,
+      u.first_name,
+      u.last_name,
+      p.date_of_birth,
+
+      pa.condition_state,
+      pa.status,
+
+      TIMESTAMPDIFF(YEAR, p.date_of_birth, CURDATE()) AS age
+
+    FROM patient_assignments pa
+
+    JOIN patients p ON p.id = pa.patient_id
+    JOIN users u ON u.id = p.user_id
+
+    WHERE pa.doctor_id = ?
+      AND pa.is_active = true
+
+    ORDER BY pa.assigned_at DESC
+  `, [doctorId]);
+
+  return rows;
+};
+export const getStaffByUserIdRepo = async (userId) => {
+  const [rows] = await db.query(
+    `SELECT id FROM staff WHERE user_id = ?`,
+    [userId]
+  );
+
+  return rows[0];
 };
