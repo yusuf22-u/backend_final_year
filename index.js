@@ -30,16 +30,12 @@ const app = express();
 app.use(express.json());
 app.use("/uploads", express.static("uploads/profile_images"));
 app.use("/uploads", express.static("uploads/patient_profile"));
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://client-final-year.onrender.com"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+app.use(cors({
+    origin: 'https://client-final-year.onrender.com',
+    // origin:'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
-  })
-);
+}));
 await createUserTable();
 await createStaffTable();
 await createPatientsTable();
