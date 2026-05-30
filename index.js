@@ -36,18 +36,16 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
 }));
+await createUserTable();
+await createStaffTable();
+await createPatientsTable();
 
-// creating table
-await createUserTable()
-await createPatientsTable()
-await createStaffTable()
-await createAppointmentsTable()
-await createBedsTable()
-await createNotificationsTable()
-await createHistoryTable()
-await createPrescriptionsTable()
-await createVitalsTable()
-await createAppointmentsTable()
+await createAppointmentsTable();
+await createBedsTable();
+await createNotificationsTable();
+await createHistoryTable();
+await createPrescriptionsTable();
+await createVitalsTable();
 
 
 app.use("/api/users", router);
