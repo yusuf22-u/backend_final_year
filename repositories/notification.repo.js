@@ -18,3 +18,9 @@ export const createNotificationRepo = async (
     [userId, title, message]
   );
 };
+export const getNotificationRepo = async () => {
+  const [result] = await db.query("SELECT * FROM  notifications")
+  return result
+
+}
+//get notification by userid

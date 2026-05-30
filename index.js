@@ -10,12 +10,18 @@ import { bedsRouter } from "./routers/bedRoutes.js";
 import { staffRouter } from "./routers/staffRoutes.js";
 import { appointmentRoutes } from "./routers/appointmentRoutes.js";
 import { patientRecordRoute } from "./routers/patient_recordRoute.js";
+import { notificationRouter } from "./routers/notificationRoutes.js";
 import cors from "cors";
 import  createUserTable from "./models/user.model.js"
 import createVitalsTable from "./models/vitalsModel.js";
 import createPrescriptionsTable from "./models/prescriptionModel.js";
 import createHistoryTable from "./models/historyModel.js";
 import createAppointmentsTable from "./models/appointmentModel.js"
+import createPatientsTable from "./models/patients.js";
+import createStaffTable from "./models/staffModel.js";
+import createBedsTable from "./models/bedsModel.js";
+import createNotificationsTable from "./models/notificationmodel.js";
+
 // import createVitalsTable from "./models/vitalsModel.js";
 dotenv.config();
 
@@ -33,6 +39,11 @@ app.use(cors({
 
 // creating table
 await createUserTable()
+await createPatientsTable()
+await createStaffTable()
+await createAppointmentsTable()
+await createBedsTable()
+await createNotificationsTable()
 await createHistoryTable()
 await createPrescriptionsTable()
 await createVitalsTable()
@@ -47,6 +58,7 @@ app.use("/api/beds", bedsRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/patient-records", patientRecordRoute);
+app.use("/api/notifications",notificationRouter)
 
 app.listen(process.env.PORT, () =>
   console.log(`server runing on port ${process.env.PORT}`),

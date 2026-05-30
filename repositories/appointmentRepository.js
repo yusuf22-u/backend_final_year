@@ -129,25 +129,32 @@ DOCTOR APPOINTMENTS
 ========================
 */
 export const getDoctorAppointmentsRepo = async (doctor_id) => {
-  const [rows] = await db.query(
-    `
+  const [rows] = await db.query(`
     SELECT
       a.*,
       u.first_name,
-      u.last_name
+      u.last_name,
+      u.email,
+      u.phone
     FROM appointments a
     JOIN patients p ON p.id = a.patient_id
     JOIN users u ON u.id = p.user_id
-    WHERE a.doctor_id=? 
-    AND a.status='approved'
-    `,
-    [doctor_id]
-  );
+    WHERE a.doctor_id = ?
+    AND a.status = 'approved'
+    ORDER BY a.appointment_date DESC
+  `, [doctor_id]);
 
   return rows;
 };
 
+export const findDoctorByUserId = async (userId) => {
+  const [rows] = await db.query(
+    `SELECT * FROM staff WHERE id = ?`,
+    [userId]
+  );
 
+  return rows[0];
+};
 /*
 ========================
 PENDING APPOINTMENTS
@@ -189,6 +196,7 @@ export const getDetailForAppointmentRepo = async () => {
       pu.first_name AS patient_first_name,
       pu.last_name AS patient_last_name,
       p.address AS patient_address,
+      p.date_of_birth,
 
       du.first_name AS doctor_first_name,
       du.last_name AS doctor_last_name,

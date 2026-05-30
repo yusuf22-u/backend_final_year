@@ -101,3 +101,19 @@ export const getAdminUser = async () => {
 
   return rows[0];
 };
+export const findPatientByUserId = async (userId) => {
+  const [rows] = await db.query(`
+    SELECT
+      p.*,
+      u.first_name,
+      u.last_name,
+      u.email,
+      u.phone,
+      u.profile_image
+    FROM patients p
+    JOIN users u ON u.id = p.user_id
+    WHERE p.user_id = ?
+  `, [userId]);
+
+  return rows[0];
+};

@@ -96,14 +96,14 @@ ADMIN REJECT
 ========================
 */
 export const rejectAppointmentService =
-async (id) => {
+async (id,message) => {
   const patientUserId =
     await rejectAppointmentRepo(id);
 
   await createNotificationRepo(
     patientUserId,
     "Appointment Rejected",
-    "Your appointment was rejected"
+    message
   );
 };
 

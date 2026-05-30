@@ -2,6 +2,7 @@ import * as VitalService from "../services/vitalService.js";
 import { findPatientById } from "../repositories/patientRepository.js";
 import { findVitalsByPatientId } from "../repositories/vitalsRepository.js";
 import { findPrescriptionsByPatientId } from "../repositories/prescriptionRepository.js";
+import {findPatientByUserId} from "../repositories/auth.user.js"
 
 export const createVital = async (req, res) => {
   try {
@@ -144,6 +145,38 @@ export const getMedicalRecord = async (req, res) => {
     res.status(500).json({
       success:false,
       message:error.message
+    });
+  }
+};
+export const getMyMedicalRecord = async (req, res) => {
+  try {
+    const userId = req.user.userId; // from JWT
+
+    // get patient using user_id
+    const patient = await findPatientByUserId(userId);
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found"
+      });
+    }
+
+    const vitals = await findVitalsByPatientId(patient.id);
+    const prescriptions = await findPrescriptionsByPatientId(patient.id);
+
+    res.status(200).json({
+      success: true,
+      patient,
+      vitals,
+      prescriptions
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
