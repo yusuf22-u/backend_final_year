@@ -32,7 +32,7 @@ app.use("/uploads", express.static("uploads/profile_images"));
 app.use("/uploads", express.static("uploads/patient_profile"));
 
 app.use(cors({
-    origin: 'https://client-final-year.onrender.com',
+    origin: 'https://healthcare-system-gos1.onrender.com',
     // origin:'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
